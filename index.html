@@ -1,1 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
+<!-- App icons -->
+<link rel="icon" type="image/x-icon" href="AppFiles/Icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="AppFiles/Logos/AppIcon192px.png">
+<link rel="icon" type="image/png" sizes="512x512" href="AppFiles/Logos/AppIcon512px.png">
+<link rel="apple-touch-icon" href="AppFiles/Logos/AppIcon192px.png">
+<link rel="manifest" href="oranges.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f2750f">
+<!-- End app icons -->
+
+<title>Oranges to Oranges</title>
+
+<style>
+
+  /* Fonts: self-hosted (AppFiles/Fonts, see get-fonts.py); system fonts until present. */
+  @font-face { font-family: 'Big Shoulders Display'; font-style: normal; font-weight: 600; font-display: swap; src: url('AppFiles/Fonts/big-shoulders-display-600.woff2') format('woff2'); }
+  @font-face { font-family: 'Big Shoulders Display'; font-style: normal; font-weight: 800; font-display: swap; src: url('AppFiles/Fonts/big-shoulders-display-800.woff2') format('woff2'); }
+  @font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 400; font-display: swap; src: url('AppFiles/Fonts/source-sans-3-400.woff2') format('woff2'); }
+  @font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 600; font-display: swap; src: url('AppFiles/Fonts/source-sans-3-600.woff2') format('woff2'); }
+  @font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 700; font-display: swap; src: url('AppFiles/Fonts/source-sans-3-700.woff2') format('woff2'); }
+
+  :root {
+    --paper: #fff3df;
+    --paper-dim: #f6e4c4;
+    --ink: #2a1608;
+    --ink-soft: #6b4a2e;
+    --orange: #f2750f;
+    --orange-dark: #b9510a;
+    --leaf: #3f7d2c;
+    --card: #fffaf0;
+    --rule: rgba(42, 22, 8, 0.16);
+    --shadow: rgba(42, 22, 8, 0.28);
+    --font-display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+    --font-body: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  body {
+    font-family: var(--font-body);
+    min-height: 100vh;
+    background-color: var(--paper);
+    background-image: radial-gradient(circle at 1px 1px, rgba(42,22,8,0.06) 1px, transparent 0);
+    background-size: 22px 22px;
+    text-align: center;
+    color: var(--ink);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body.dark-mode {
+    --paper-dim: #2c1e12;
+    --card: #231810;
+    --ink-soft: #c9ad92;
+    --rule: rgba(255, 255, 255, 0.16);
+    --shadow: rgba(0, 0, 0, 0.5);
+    background-color: #17100a;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+    color: #f6e7d2;
+  }
+
+  .hidden { display: none !important; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .screen {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    width: 100%; max-width: 480px; margin: 0 auto; padding: 24px 14px 8px;
+  }
+
+  .logo { width: 72px; height: 72px; }
+
+  h1 {
+    font-family: var(--font-display); font-weight: 800; font-size: 46px;
+    letter-spacing: -0.01em; line-height: 0.95; text-transform: uppercase;
+  }
+  h1 span { color: var(--orange); }
+  h1::after { content: ''; display: block; width: 64px; height: 5px; background-color: var(--orange); margin: 12px auto 0; border-radius: 3px; }
+
+  .tagline { font-size: 14px; color: var(--ink-soft); max-width: 300px; }
+
+  .panel {
+    width: 100%; padding: 16px; border: 2px solid var(--ink); border-radius: 6px;
+    background-color: var(--card); text-align: left;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  body.dark-mode .panel { border-color: #f6e7d2; }
+  .panel-title { font-family: var(--font-display); font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .panel p, .note { font-size: 13px; color: var(--ink-soft); }
+
+  /* ---------- Buttons + inputs ---------- */
+  .small-button {
+    padding: 9px 14px; font-size: 14px; font-weight: 700; font-family: var(--font-body);
+    border-radius: 4px; border: 2px solid var(--ink); background-color: var(--card); color: var(--ink);
+    cursor: pointer; transition: transform 0.12s ease, background-color 0.2s ease; min-height: 40px;
+  }
+  .small-button:hover:not(:disabled) { transform: translateY(-1px); background-color: var(--paper-dim); }
+  .small-button:disabled { opacity: 0.4; cursor: not-allowed; }
+  body.dark-mode .small-button { border-color: #f6e7d2; color: #f6e7d2; }
+
+  .big-button {
+    padding: 13px 26px; font-family: var(--font-display); font-size: 21px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.02em;
+    background-color: var(--orange); color: #fff; border: 2px solid var(--ink); border-radius: 6px;
+    box-shadow: 4px 4px 0 var(--ink); cursor: pointer; min-height: 48px;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease;
+  }
+  .big-button:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+  .big-button:active:not(:disabled) { transform: translate(0, 0); box-shadow: 2px 2px 0 var(--ink); }
+  .big-button:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+  .big-button.secondary { background-color: var(--card); color: var(--ink); }
+  body.dark-mode .big-button { border-color: #f6e7d2; box-shadow: 4px 4px 0 #f6e7d2; }
+  body.dark-mode .big-button.secondary { color: #f6e7d2; }
+  .big-button.pulse { animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.04); } }
+
+  button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid var(--orange-dark); outline-offset: 2px; }
+
+  input[type="text"], input[type="number"], select {
+    padding: 9px 10px; font-size: 16px; font-family: var(--font-body);
+    border: 2px solid var(--ink); border-radius: 4px; background-color: var(--card); color: var(--ink);
+  }
+  body.dark-mode input[type="text"], body.dark-mode input[type="number"], body.dark-mode select { border-color: #f6e7d2; color: #f6e7d2; }
+
+  .room-input { flex: 1; min-width: 0; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row.center { justify-content: center; }
+  .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; }
+  .field input, .field select { width: 100%; min-width: 100px; }
+  .field-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .field-row .field { flex: 1; }
+
+  .status-message { min-height: 20px; font-size: 14px; font-weight: 600; color: var(--orange-dark); max-width: 360px; }
+  .status-message.info { color: var(--ink-soft); font-weight: 400; }
+  body.dark-mode .status-message { color: #ff9a4d; }
+
+  /* ---------- Room ---------- */
+  .room-code-big {
+    font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 11vw, 52px);
+    letter-spacing: 0.08em; line-height: 1; text-align: center; word-break: break-all;
+    padding: 16px 12px; background-color: var(--ink); color: var(--paper); border-radius: 6px; box-shadow: 5px 5px 0 var(--orange);
+  }
+  body.dark-mode .room-code-big { background-color: #0b0704; color: #f6e7d2; border: 2px solid #f6e7d2; }
+
+  .deck-info { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+  .deck-code {
+    background: none; border: none; cursor: pointer; font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft);
+    opacity: 0.55; padding: 6px 8px; border-radius: 3px;
+  }
+  .deck-code::after { content: ' ▾'; }
+  .deck-code[aria-expanded="true"]::after { content: ' ▴'; }
+  .deck-code:hover, .deck-code[aria-expanded="true"] { opacity: 1; }
+  .deck-list {
+    width: 100%; max-width: 300px; max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px;
+    padding: 8px 10px; text-align: left; font-size: 13px; background-color: var(--paper-dim);
+    border: 1px dashed var(--ink-soft); border-radius: 3px;
+  }
+  .deck-item.on { font-weight: 600; }
+  .deck-item.off { opacity: 0.45; }
+  .deck-count, .pack-counts { font-size: 12px; color: var(--ink-soft); font-weight: 400; }
+
+  #pack-selection { max-height: 210px; overflow-y: auto; padding: 8px; border: 2px solid var(--ink); border-radius: 4px; background-color: var(--card); display: flex; flex-direction: column; gap: 2px; }
+  body.dark-mode #pack-selection { border-color: #f6e7d2; }
+  .pack-checkbox { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 3px; cursor: pointer; text-align: left; }
+  .pack-checkbox:hover { background-color: var(--paper-dim); }
+  .pack-checkbox input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--orange); cursor: pointer; }
+  .pack-text { display: flex; flex-direction: column; min-width: 0; }
+  .pack-name { font-size: 15px; }
+  .deck-totals { font-size: 13px; font-weight: 600; }
+
+  .round-row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .round-row input { width: 76px; text-align: center; }
+  .round-badge { font-family: var(--font-display); font-weight: 700; font-size: 20px; text-transform: uppercase; padding: 4px 14px; background-color: var(--orange); color: #fff; border-radius: 4px; }
+
+  details.box { width: 100%; text-align: left; font-size: 13px; background-color: var(--paper-dim); border: 1px dashed var(--ink-soft); border-radius: 4px; }
+  details.box > summary { cursor: pointer; padding: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+  .box-body { padding: 0 12px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .box-text { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+
+  .qr-box { width: 100%; max-width: 200px; padding: 8px; background-color: #fff; border: 2px solid var(--ink); border-radius: 4px; }
+  .qr-box svg, .qr-box img, .qr-box canvas { display: block; width: 100%; height: auto; }
+  .invite-link { width: 100%; font-size: 13px !important; letter-spacing: 0 !important; text-transform: none !important; }
+
+  .history-list { list-style: none; max-height: 260px; overflow-y: auto; padding: 0 12px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .history-item { display: flex; gap: 8px; align-items: baseline; border-top: 1px solid var(--rule); padding-top: 6px; }
+  .history-round { font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--orange-dark); min-width: 2.4em; }
+  .history-meta { margin-left: auto; font-size: 12px; color: var(--ink-soft); text-align: right; }
+
+  /* ---------- Game ---------- */
+  .banner { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .banner-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+  .banner-code {
+    font-family: var(--font-display); font-weight: 800; font-size: clamp(22px, 7vw, 30px); letter-spacing: 0.08em; line-height: 1;
+    padding: 6px 16px; background-color: var(--ink); color: var(--paper); border-radius: 4px; box-shadow: 4px 4px 0 var(--orange); word-break: break-all;
+  }
+  body.dark-mode .banner-code { background-color: #0b0704; color: #f6e7d2; border: 1px solid #f6e7d2; }
+
+  .role-line { font-size: 15px; font-weight: 700; color: var(--orange-dark); }
+  .role-line.me { background-color: var(--orange); color: #fff; padding: 6px 14px; border-radius: 999px; }
+  body.dark-mode .role-line:not(.me) { color: #ff9a4d; }
+
+  .scores { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; }
+  .score-chip {
+    display: flex; flex-direction: column; align-items: center; min-width: 54px; padding: 4px 8px;
+    border: 2px solid var(--ink-soft); border-radius: 6px; background-color: var(--card); font-size: 12px; font-weight: 700;
+  }
+  .score-chip b { font-family: var(--font-display); font-size: 20px; line-height: 1; }
+  .score-chip.me { border-color: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+  .score-chip.judge { background-color: var(--paper-dim); }
+  .score-chip.lead b { color: var(--orange-dark); }
+  .target-note { font-size: 12px; color: var(--ink-soft); }
+
+  .orange-card {
+    width: 100%; max-width: 330px; min-height: 190px; padding: 22px 20px;
+    background: radial-gradient(circle at 30% 25%, #ffa24d 0%, var(--orange) 55%, #d85f05 100%);
+    color: #fff; border: 3px solid var(--ink); border-radius: 18px; box-shadow: 6px 6px 0 var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    animation: dealIn 0.35s ease backwards;
+  }
+  body.dark-mode .orange-card { border-color: #f6e7d2; box-shadow: 6px 6px 0 #f6e7d2; }
+  .orange-card .oc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.9; }
+  .orange-card .oc-word { font-family: var(--font-display); font-weight: 800; font-size: clamp(40px, 14vw, 58px); line-height: 1; text-transform: uppercase; word-break: break-word; }
+  .orange-card .oc-hint { font-size: 15px; font-weight: 600; opacity: 0.95; }
+  @keyframes dealIn { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+  .section { width: 100%; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+  .section h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; text-transform: uppercase; letter-spacing: 0.02em; text-align: center; }
+  .section p { font-size: 14px; color: var(--ink-soft); text-align: center; }
+
+  .hand { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .answer-card {
+    position: relative; width: 100%; min-height: 62px; padding: 14px 44px 14px 16px; text-align: left;
+    font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.15; letter-spacing: 0.01em;
+    background-color: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--shadow); cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  body.dark-mode .answer-card { color: #f6e7d2; border-color: #f6e7d2; }
+  .answer-card:active { transform: translateY(2px); }
+  .answer-card .tick {
+    position: absolute; top: 50%; right: 12px; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--ink-soft); display: flex; align-items: center; justify-content: center; color: transparent; font-size: 15px; font-family: var(--font-body);
+  }
+  .answer-card[aria-checked="true"] { border-color: var(--orange); box-shadow: 4px 6px 0 var(--orange); transform: translateY(-3px); }
+  .answer-card[aria-checked="true"] .tick { background-color: var(--orange); border-color: var(--orange); color: #fff; }
+
+  .sticky-bar {
+    position: sticky; bottom: 0; display: flex; justify-content: center; padding: 26px 0 12px; z-index: 5;
+    background: linear-gradient(to top, var(--paper) 55%, rgba(255, 243, 223, 0));
+  }
+  body.dark-mode .sticky-bar { background: linear-gradient(to top, #17100a 55%, rgba(23, 16, 10, 0)); }
+
+  .code-card {
+    align-self: center; text-align: center; padding: 18px 22px; background-color: var(--card);
+    border: 3px dashed var(--orange); border-radius: 14px; width: 100%;
+  }
+  .code-card .code-label { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+  .play-code { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700; font-size: clamp(44px, 16vw, 68px); letter-spacing: 0.18em; line-height: 1.1; margin: 6px 0 2px; color: var(--orange-dark); }
+  body.dark-mode .play-code { color: #ff9a4d; }
+  .played-text { font-family: var(--font-display); font-weight: 700; font-size: 24px; margin-top: 6px; }
+
+  .collect-form { display: flex; gap: 8px; }
+  .collect-form input {
+    flex: 1; min-width: 0; text-align: center; text-transform: uppercase; font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 28px; letter-spacing: 0.2em; font-weight: 700;
+  }
+
+  .judge-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .judge-item { display: flex; gap: 10px; align-items: stretch; }
+  .judge-letter {
+    display: flex; align-items: center; justify-content: center; width: 40px; flex-shrink: 0;
+    font-family: var(--font-display); font-weight: 800; font-size: 26px; background-color: var(--ink); color: var(--paper); border-radius: 8px;
+  }
+  body.dark-mode .judge-letter { background-color: #f6e7d2; color: #17100a; }
+  .judge-item .answer-card { flex: 1; }
+
+  .winner-card {
+    width: 100%; padding: 18px; text-align: center; border: 3px solid var(--leaf); border-radius: 14px; background-color: var(--card);
+  }
+  .winner-card .win-label { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--leaf); }
+  body.dark-mode .winner-card .win-label { color: #8fd078; }
+  .winner-card .win-seat { font-family: var(--font-display); font-weight: 800; font-size: 40px; text-transform: uppercase; }
+  .winner-card .win-text { font-family: var(--font-display); font-weight: 700; font-size: 24px; margin-top: 4px; }
+
+  .seat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
+  .seat-grid button { min-height: 48px; }
+  .seat-grid button[aria-pressed="true"] { background-color: var(--leaf); border-color: var(--leaf); color: #fff; }
+
+  .game-over { width: 100%; padding: 18px; text-align: center; border: 3px solid var(--orange); border-radius: 14px; background-color: var(--paper-dim); }
+  .game-over .go-title { font-family: var(--font-display); font-weight: 800; font-size: 32px; text-transform: uppercase; }
+
+  .game-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding-bottom: 6px; }
+
+  /* ---------- Toggle + footer ---------- */
+  #mode-toggle { display: flex; justify-content: center; margin: 20px 0; }
+  #toggle-button { padding: 4px; background: none; border: none; cursor: pointer; border-radius: 999px; }
+  .toggle-track { position: relative; display: flex; align-items: center; width: 68px; height: 34px; border-radius: 999px; background-color: var(--ink); border: 2px solid var(--ink); transition: background-color 0.3s ease; }
+  body.dark-mode .toggle-track { background-color: #3a2a1b; border-color: #f6e7d2; }
+  .toggle-icon { position: absolute; top: 50%; transform: translateY(-50%); font-size: 15px; line-height: 1; }
+  .toggle-icon-sun { left: 7px; }
+  .toggle-icon-moon { right: 7px; }
+  .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%; background-color: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.4); transition: transform 0.25s ease; }
+  body.dark-mode .toggle-thumb { transform: translateX(34px); background-color: #f6e7d2; }
+
+  footer { font-size: 13px; color: var(--ink-soft); padding: 10px 16px 28px; }
+  footer a { color: var(--orange-dark); text-decoration: none; font-weight: 600; }
+  .offline-status { font-size: 12px; color: var(--leaf); margin-bottom: 6px; }
+
+</style>
+</head>
+
+<body>
+
+  <!-- ============================ MENU ============================ -->
+  <main class="screen" id="menu-screen">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="38" r="22" fill="#f2750f" stroke="#2a1608" stroke-width="3"/>
+      <ellipse cx="24" cy="30" rx="7" ry="4.5" fill="#ffc48a" opacity="0.8" transform="rotate(-30 24 30)"/>
+      <path d="M32 16 C32 9 38 6 45 7 C44 14 38 18 32 16 Z" fill="#3f7d2c" stroke="#2a1608" stroke-width="2.5" stroke-linejoin="round"/>
+    </svg>
+    <h1>Oranges <span>to</span> Oranges</h1>
+    <p class="tagline">Play the answer you think the judge will love. No Wi-Fi needed — just a room code.</p>
+
+    <!-- Room: enter a code -->
+    <section class="panel" id="room-entry">
+      <span class="panel-title">Enter a room code</span>
+      <p>Choose any word or number, or type the code your group is using. Everyone who enters the same code gets the same deal.</p>
+      <form class="row" id="join-form">
+        <input class="room-input" type="text" id="join-code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ROOM CODE" aria-label="Room code">
+        <button class="big-button" type="submit" style="font-size:17px;padding:10px 18px;">Enter</button>
+      </form>
+    </section>
+
+    <!-- Room: in a room -->
+    <section class="panel hidden" id="room-active">
+      <span class="panel-title">Room code</span>
+      <div class="room-code-big" id="room-code-display" aria-live="polite">—</div>
+      <div class="deck-info">
+        <button class="deck-code" type="button" id="deck-code" aria-expanded="false" aria-label="Show which decks are enabled">decks</button>
+        <div class="deck-list hidden" id="deck-list"></div>
+      </div>
+      <div class="row center">
+        <button class="small-button" id="copy-room-code" type="button">Copy code</button>
+        <button class="small-button" id="leave-room" type="button">Leave room</button>
+      </div>
+    </section>
+
+    <!-- Table: players, seat, judge, target -->
+    <section class="panel">
+      <span class="panel-title">Your table</span>
+      <div class="field-row">
+        <label class="field" for="player-count">Players (3–10)
+          <input type="number" id="player-count" min="3" max="10" value="4">
+        </label>
+        <label class="field" for="my-seat">My seat
+          <select id="my-seat"></select>
+        </label>
+      </div>
+      <div class="field-row">
+        <label class="field" for="judge-mode">First judge
+          <select id="judge-mode">
+            <option value="seq">Seat 1</option>
+            <option value="rand">A random seat</option>
+          </select>
+        </label>
+        <label class="field" for="win-target">Oranges to win
+          <input type="number" id="win-target" min="1" max="20" placeholder="Auto">
+        </label>
+      </div>
+      <p id="table-note">Everyone picks a different seat. The judge moves up one seat every round.</p>
+    </section>
+
+    <!-- Round + play -->
+    <section class="panel">
+      <span class="panel-title">Round</span>
+      <div class="round-row">
+        <button class="small-button" id="round-prev" type="button" aria-label="Previous round">◀ Prev</button>
+        <input type="number" id="round-input" min="1" max="9999" value="1" aria-label="Round number">
+        <button class="small-button" id="round-next" type="button" aria-label="Next round">Next ▶</button>
+      </div>
+      <div class="row center">
+        <button class="big-button" id="play-button" type="button" disabled>Play round</button>
+      </div>
+      <p class="status-message" role="status" aria-live="polite" id="menu-status"></p>
+    </section>
+
+    <!-- Decks -->
+    <section class="panel">
+      <span class="panel-title">Decks</span>
+      <div class="row">
+        <button class="small-button" id="select-all-decks" type="button">Select all</button>
+        <button class="small-button" id="select-none-decks" type="button">Select none</button>
+      </div>
+      <div id="pack-selection" role="group" aria-label="Card decks"></div>
+      <p class="deck-totals" id="deck-totals" aria-live="polite"></p>
+      <p>Everyone needs the same decks selected. The invite link sets them for you.</p>
+    </section>
+
+    <!-- Invite -->
+    <details class="box hidden" id="invite">
+      <summary>Invite players · link &amp; QR</summary>
+      <div class="box-body">
+        <div class="qr-box" role="img" aria-label="QR code that opens this room at this round"></div>
+        <input class="room-input invite-link" type="text" id="invite-link" readonly aria-label="Invite link">
+        <div class="row center">
+          <button class="small-button" id="copy-invite-link" type="button">Copy link</button>
+          <button class="small-button hidden" id="share-invite-link" type="button">Share…</button>
+        </div>
+        <p class="note" id="invite-note"></p>
+      </div>
+    </details>
+
+    <!-- History -->
+    <details class="box hidden" id="history">
+      <summary>Round history <span id="history-count"></span></summary>
+      <ol class="history-list" id="history-list"></ol>
+    </details>
+
+    <!-- Rules -->
+    <details class="box">
+      <summary>How to play</summary>
+      <div class="box-text">
+        <p><b>1.</b> Each round one player is the judge. Everyone else holds 7 answer cards.</p>
+        <p><b>2.</b> The judge’s phone shows an orange card with a describing word.</p>
+        <p><b>3.</b> Everyone else secretly picks the answer card that best matches it, and gets a 4-character play code.</p>
+        <p><b>4.</b> Pass the judge’s phone around. Each player types their code in, then passes it on.</p>
+        <p><b>5.</b> The judge reads the shuffled answers aloud and picks a favourite — whoever played it wins the orange.</p>
+        <p><b>6.</b> Next round, the judge moves one seat along. First to the target number of oranges wins!</p>
+      </div>
+    </details>
+  </main>
+
+  <!-- ============================ GAME ============================ -->
+  <main class="screen hidden" id="game-screen">
+    <div class="banner">
+      <span class="banner-label">Room code</span>
+      <span class="banner-code" id="banner-code">—</span>
+    </div>
+
+    <div class="round-row">
+      <button class="small-button" id="game-prev" type="button">◀ Prev</button>
+      <span class="round-badge" id="round-badge">Round 1</span>
+      <button class="small-button" id="game-next" type="button">Next ▶</button>
+    </div>
+
+    <p class="role-line" id="role-line"></p>
+
+    <div class="orange-card" id="orange-card">
+      <span class="oc-label">Orange card</span>
+      <span class="oc-word" id="oc-word">—</span>
+      <span class="oc-hint" id="oc-hint"></span>
+    </div>
+
+    <div class="scores" id="scores" aria-label="Scores"></div>
+    <p class="target-note" id="target-note"></p>
+
+    <p class="status-message" role="status" aria-live="polite" id="game-status"></p>
+
+    <!-- Player: pick a card -->
+    <section class="section hidden" id="player-pick">
+      <h2>Your hand</h2>
+      <p>Tap the answer you think matches best.</p>
+      <ul class="hand" id="hand" role="radiogroup" aria-label="Your answer cards"></ul>
+      <div class="sticky-bar"><button class="big-button" id="play-card" type="button" disabled>Play this card</button></div>
+    </section>
+
+    <!-- Player: card played -->
+    <section class="section hidden" id="player-played">
+      <div class="code-card">
+        <div class="code-label">Your play code</div>
+        <div class="play-code" id="play-code">----</div>
+        <div class="played-text" id="played-text"></div>
+      </div>
+      <p>Type this code into the judge’s phone when it gets passed to you. Keep it secret from other players!</p>
+      <div class="row center"><button class="small-button" id="change-card" type="button">Change my card</button></div>
+    </section>
+
+    <!-- Judge: collect -->
+    <section class="section hidden" id="judge-collect">
+      <h2>Collect the cards</h2>
+      <p>Pass this phone around. Each player types their play code, then hands it on.</p>
+      <form class="collect-form" id="collect-form">
+        <input type="text" id="token-input" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="CODE" aria-label="Play code">
+        <button class="big-button" type="submit" style="font-size:18px;padding:10px 18px;">Add</button>
+      </form>
+      <p id="collect-count" aria-live="polite"></p>
+      <div class="row center"><button class="big-button" id="reveal-cards" type="button" disabled>Reveal cards</button></div>
+    </section>
+
+    <!-- Judge: choose -->
+    <section class="section hidden" id="judge-choose">
+      <h2>Pick your favourite</h2>
+      <p>Read the answers out loud, then choose the one that best fits the orange card.</p>
+      <ul class="judge-list" id="judge-list"></ul>
+      <div class="sticky-bar"><button class="big-button" id="pick-winner" type="button" disabled>Choose this one</button></div>
+      <div class="row center"><button class="small-button" id="back-to-collect" type="button">◀ Add more cards</button></div>
+    </section>
+
+    <!-- Winner -->
+    <section class="section hidden" id="winner-section">
+      <div class="winner-card" id="winner-card"></div>
+    </section>
+
+    <!-- Everyone else: record the winner -->
+    <section class="section hidden" id="record-winner">
+      <h2>Who won this round?</h2>
+      <p>When the judge announces the winner, tap their seat.</p>
+      <div class="seat-grid" id="seat-grid"></div>
+    </section>
+
+    <section class="game-over hidden" id="game-over">
+      <div class="go-title" id="go-title"></div>
+      <p class="note" id="go-note"></p>
+      <div class="row center" style="margin-top:10px"><button class="big-button" id="new-game" type="button" style="font-size:18px;padding:10px 20px;">New game</button></div>
+    </section>
+
+    <div class="game-actions">
+      <button class="big-button" id="next-round-button" type="button" style="font-size:18px;padding:10px 22px;">Next round ▶</button>
+      <button class="small-button" id="back-to-menu" type="button">Menu</button>
+    </div>
+
+    <details class="box hidden" id="game-invite">
+      <summary>Invite · link &amp; QR</summary>
+      <div class="box-body">
+        <div class="qr-box" role="img" aria-label="QR code that opens this room at this round"></div>
+        <p class="note">Scan to join this room at this round.</p>
+      </div>
+    </details>
+  </main>
+
+  <footer>
+    <p class="offline-status hidden" id="offline-status">✓ Ready to play offline</p>
+    <div id="mode-toggle">
+      <button id="toggle-button" aria-pressed="false">
+        <span class="toggle-track" aria-hidden="true">
+          <span class="toggle-icon toggle-icon-sun">☀️</span>
+          <span class="toggle-icon toggle-icon-moon">🌙</span>
+          <span class="toggle-thumb"></span>
+        </span>
+        <span class="visually-hidden">Toggle light or dark mode</span>
+      </button>
+    </div>
+    A judge-picks-the-best party game for rooms with no Wi-Fi.
+  </footer>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ============================================================
+     Constants + storage
+  ============================================================ */
+  const HAND = 7;
+  const MIN_PLAYERS = 3;
+  const MAX_PLAYERS = 10;
+  const ROUND_MAX = 9999;
+  const KEYS = {
+    mode: 'ot_mode', room: 'ot_room', packs: 'ot_packs', players: 'ot_players',
+    seat: 'ot_seat', judge: 'ot_judge', target: 'ot_target', rooms: 'ot_rooms'
+  };
+
+  // Play-code alphabet: no I, L, O or U, so codes are easy to read and type.
+  const ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  const TOKEN_MOD = 32749; // prime, just under 32^3
+
+  const store = {
+    get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); } catch (e) {} },
+    del(key) { try { localStorage.removeItem(key); } catch (e) {} }
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  /* ============================================================
+     State
+  ============================================================ */
+  let cards = [];
+  let packIndex = new Map();   // pack -> { oranges: [...], answers: [...] }
+  let ready = false;
+  let roomCode = null;
+  let round = 1;
+  let playerCount = 4;
+  let mySeat = 1;
+  let judgeMode = 'seq';       // 'seq' | 'rand'
+  let winTarget = null;        // null = automatic from the player count
+  let inGame = false;
+  let selectedSlot = null;     // slot picked in the hand, not yet played
+  let selectedJudge = null;    // seat picked on the judge's list, not yet chosen
+  let cache = new Map();
+  let rooms = {};              // code -> { plays, winners, tokens, revealed }
+  let urlSyncReady = false;
+  let lastInviteLink = '';
+
+  /* ============================================================
+     Dark mode
+  ============================================================ */
+  const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyMode(isDark) {
+    document.body.classList.toggle('dark-mode', isDark);
+    $('toggle-button').setAttribute('aria-pressed', String(isDark));
+  }
+  function initMode() {
+    const saved = store.get(KEYS.mode);
+    applyMode(saved === 'dark' || saved === 'light' ? saved === 'dark' : colorSchemeQuery.matches);
+  }
+  colorSchemeQuery.addEventListener('change', (e) => { if (!store.get(KEYS.mode)) applyMode(e.matches); });
+  $('toggle-button').addEventListener('click', () => {
+    const isDark = !document.body.classList.contains('dark-mode');
+    applyMode(isDark);
+    store.set(KEYS.mode, isDark ? 'dark' : 'light');
+  });
+
+  function setStatus(message, isInfo) {
+    document.querySelectorAll('.status-message').forEach(el => {
+      el.textContent = message || '';
+      el.classList.toggle('info', Boolean(isInfo));
+    });
+  }
+
+  /* ============================================================
+     Seeded randomness: the room code decides every shuffle
+  ============================================================ */
+  function xmur3(str) {
+    let h = 1779033703 ^ str.length;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return function () {
+      h = Math.imul(h ^ (h >>> 16), 2246822507);
+      h = Math.imul(h ^ (h >>> 13), 3266489909);
+      h ^= h >>> 16;
+      return h >>> 0;
+    };
+  }
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const rngFromString = (str) => mulberry32(xmur3(str)());
+
+  function seededShuffle(array, rng) {
+    const result = array.slice();
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  function compareCards(a, b) {
+    if (a.Pack !== b.Pack) return a.Pack < b.Pack ? -1 : 1;
+    if (a.Text !== b.Text) return a.Text < b.Text ? -1 : 1;
+    return 0;
+  }
+
+  function normalizeRoomCode(raw) {
+    return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
+  }
+
+  /* ============================================================
+     Cards + decks
+  ============================================================ */
+  async function loadCards() {
+    setStatus('Loading cards…', true);
+    try {
+      const response = await fetch('oranges-cards.json');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      cards = await response.json();
+      buildIndex();
+      populatePacks();
+      ready = true;
+      setStatus('');
+      applyInviteFromHash();
+      urlSyncReady = true;
+      updateAll();
+      syncAddressBar();
+    } catch (error) {
+      console.error('Error loading cards:', error);
+      setStatus('Could not load oranges-cards.json. Keep it in the same folder as this page.');
+    }
+  }
+
+  function buildIndex() {
+    packIndex = new Map();
+    for (const card of cards) {
+      if (!packIndex.has(card.Pack)) packIndex.set(card.Pack, { oranges: [], answers: [] });
+      const bucket = packIndex.get(card.Pack);
+      if (card.Type === 'Orange') bucket.oranges.push(card);
+      else if (card.Type === 'Answer') bucket.answers.push(card);
+    }
+    cache = new Map();
+  }
+
+  const numberFormat = new Intl.NumberFormat('en-GB');
+
+  function getSelectedPacks() {
+    return Array.from(document.querySelectorAll('#pack-selection input:checked')).map(i => i.value);
+  }
+
+  const persistPacks = () => store.set(KEYS.packs, JSON.stringify(getSelectedPacks()));
+  const resetCache = () => { cache = new Map(); };
+  const packsKey = () => getSelectedPacks().slice().sort().join('|');
+
+  function populatePacks() {
+    const packs = [...packIndex.keys()].sort();
+    let saved = [];
+    try { saved = JSON.parse(store.get(KEYS.packs) || '[]'); } catch (e) {}
+    const savedSet = new Set(saved);
+    const useSaved = packs.some(p => savedSet.has(p));
+
+    const host = $('pack-selection');
+    host.innerHTML = '';
+    packs.forEach(pack => {
+      const label = document.createElement('label');
+      label.className = 'pack-checkbox';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = pack;
+      input.checked = useSaved ? savedSet.has(pack) : true;
+      input.addEventListener('change', () => { persistPacks(); resetCache(); updateAll(); setStatus(''); });
+      const text = document.createElement('span');
+      text.className = 'pack-text';
+      const name = document.createElement('span');
+      name.className = 'pack-name';
+      name.textContent = pack;
+      const counts = document.createElement('span');
+      counts.className = 'pack-counts';
+      const b = packIndex.get(pack);
+      counts.textContent = `${numberFormat.format(b.answers.length)} answer · ${numberFormat.format(b.oranges.length)} orange`;
+      text.append(name, counts);
+      label.append(input, text);
+      host.appendChild(label);
+    });
+    persistPacks();
+  }
+
+  function setAllPacks(on) {
+    document.querySelectorAll('#pack-selection input').forEach(i => { i.checked = on; });
+    persistPacks(); resetCache(); updateAll(); setStatus('');
+  }
+  $('select-all-decks').addEventListener('click', () => setAllPacks(true));
+  $('select-none-decks').addEventListener('click', () => setAllPacks(false));
+
+  // Canonical order (same on every phone). Card ids are positions in these lists.
+  function sortedAnswers() {
+    const key = `answers|${packsKey()}`;
+    let list = cache.get(key);
+    if (!list) {
+      list = getSelectedPacks().flatMap(p => (packIndex.get(p) || { answers: [] }).answers).slice().sort(compareCards);
+      cache.set(key, list);
+    }
+    return list;
+  }
+
+  function sortedOranges() {
+    const key = `oranges|${packsKey()}`;
+    let list = cache.get(key);
+    if (!list) {
+      list = getSelectedPacks().flatMap(p => (packIndex.get(p) || { oranges: [] }).oranges).slice().sort(compareCards);
+      cache.set(key, list);
+    }
+    return list;
+  }
+
+  function deckFingerprint() {
+    if (packIndex.size === 0) return '—';
+    const packs = getSelectedPacks().slice().sort();
+    if (packs.length === 0) return 'NONE';
+    const signature = packs.map(n => {
+      const b = packIndex.get(n);
+      return `${n}:${b.answers.length}:${b.oranges.length}`;
+    }).join('|');
+    return xmur3(signature)().toString(36).toUpperCase().padStart(5, '0').slice(-5);
+  }
+
+  /* ============================================================
+     Table rules: judge rotation, dealing, targets, scores
+  ============================================================ */
+  function defaultTarget(players) {
+    return ({ 3: 10, 4: 8, 5: 7, 6: 6, 7: 5 })[players] || 4;
+  }
+  const getTarget = () => winTarget || defaultTarget(playerCount);
+
+  // Judge starts at seat 1 ("seq") or at a seat derived from the room code
+  // ("rand"), then moves up one seat per round — identical on every phone.
+  function judgeStart() {
+    if (judgeMode !== 'rand' || !roomCode) return 1;
+    return Math.floor(rngFromString(`${roomCode}|judge|${playerCount}`)() * playerCount) + 1;
+  }
+  const judgeSeat = (r) => ((judgeStart() - 1 + (r - 1)) % playerCount) + 1;
+
+  // Orange card for a round.
+  function getOrange(r) {
+    const list = sortedOranges();
+    if (list.length === 0) return null;
+    const i = r - 1;
+    const cycle = Math.floor(i / list.length);
+    const key = `ordeck|${roomCode}|${cycle}|${packsKey()}`;
+    let deck = cache.get(key);
+    if (!deck) { deck = seededShuffle(list, rngFromString(`${roomCode}|oranges|${cycle}`)); cache.set(key, deck); }
+    return deck[i % list.length];
+  }
+
+  // Every seat draws from its own interleaved slice of one shuffled answer
+  // deck, so no two players ever hold the same card.
+  function drawIndex(seat, k) {
+    const total = sortedAnswers().length;
+    const g = k * playerCount + (seat - 1);
+    const cycle = Math.floor(g / total);
+    const key = `ansdeck|${roomCode}|${cycle}|${packsKey()}`;
+    let deck = cache.get(key);
+    if (!deck) {
+      deck = seededShuffle(sortedAnswers().map((_, i) => i), rngFromString(`${roomCode}|answers|${cycle}`));
+      cache.set(key, deck);
+    }
+    return deck[g % total];
+  }
+
+  /* ---------- per-room saved state ---------- */
+  function loadRooms() {
+    try { rooms = JSON.parse(store.get(KEYS.rooms) || '{}') || {}; } catch (e) { rooms = {}; }
+  }
+  function saveRooms() {
+    const codes = Object.keys(rooms);
+    if (codes.length > 20) codes.slice(0, codes.length - 20).forEach(c => delete rooms[c]);
+    store.set(KEYS.rooms, JSON.stringify(rooms));
+  }
+  function room() {
+    if (!rooms[roomCode]) rooms[roomCode] = { plays: {}, winners: {}, tokens: {}, revealed: {} };
+    const r = rooms[roomCode];
+    r.plays = r.plays || {}; r.winners = r.winners || {}; r.tokens = r.tokens || {}; r.revealed = r.revealed || {};
+    return r;
+  }
+
+  // My hand at the start of a round: the first 7 draws, with a replacement
+  // card for every slot I played in earlier rounds.
+  function handFor(seat, r) {
+    const st = room();
+    const slots = [];
+    let k = 0;
+    for (; k < HAND; k++) slots.push(drawIndex(seat, k));
+    const played = Object.keys(st.plays)
+      .filter(key => key.startsWith(`${seat}|`))
+      .map(key => ({ round: parseInt(key.split('|')[1], 10), slot: st.plays[key] }))
+      .filter(p => p.round < r)
+      .sort((a, b) => a.round - b.round);
+    for (const p of played) slots[p.slot] = drawIndex(seat, k++);
+    return slots;
+  }
+
+  function scoreboard() {
+    const points = new Array(playerCount + 1).fill(0);
+    const st = room();
+    Object.keys(st.winners).forEach(r => {
+      const seat = st.winners[r];
+      if (seat >= 1 && seat <= playerCount) points[seat]++;
+    });
+    return points;
+  }
+
+  /* ============================================================
+     Play codes: a short, typo-checked code carrying (card, seat)
+     for one round. The judge's phone decodes it; the seat stays
+     hidden until the winner is picked.
+  ============================================================ */
+  function tokenParams(code, r) {
+    const rng = rngFromString(`${code}|token|${r}`);
+    return { A: 2 + Math.floor(rng() * (TOKEN_MOD - 3)), B: Math.floor(rng() * TOKEN_MOD) };
+  }
+
+  function modInverse(a, m) {
+    let t = 0, newT = 1, rr = m, newR = a;
+    while (newR !== 0) {
+      const q = Math.floor(rr / newR);
+      [t, newT] = [newT, t - q * newT];
+      [rr, newR] = [newR, rr - q * newR];
+    }
+    return t < 0 ? t + m : t;
+  }
+
+  function checkChar(body, r) {
+    let sum = r % 32;
+    for (let i = 0; i < body.length; i++) sum += ALPHABET.indexOf(body[i]) * (3 + 2 * i);
+    return ALPHABET[sum % 32];
+  }
+
+  function makeToken(code, r, cardIndex, seat) {
+    const x = cardIndex * 10 + (seat - 1);
+    if (x >= TOKEN_MOD) return null;
+    const { A, B } = tokenParams(code, r);
+    const y = (A * x + B) % TOKEN_MOD;
+    const body = ALPHABET[(y >> 10) & 31] + ALPHABET[(y >> 5) & 31] + ALPHABET[y & 31];
+    return body + checkChar(body, r);
+  }
+
+  function normalizeToken(raw) {
+    return String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+      .replace(/O/g, '0').replace(/[IL]/g, '1').replace(/U/g, 'V');
+  }
+
+  // Returns { index, seat } or null if the code is mistyped / from another round.
+  function decodeToken(code, r, raw) {
+    const t = normalizeToken(raw);
+    if (t.length !== 4 || [...t].some(c => !ALPHABET.includes(c))) return null;
+    if (checkChar(t.slice(0, 3), r) !== t[3]) return null;
+    const y = (ALPHABET.indexOf(t[0]) << 10) | (ALPHABET.indexOf(t[1]) << 5) | ALPHABET.indexOf(t[2]);
+    if (y >= TOKEN_MOD) return null;
+    const { A, B } = tokenParams(code, r);
+    const x = (((y - B) % TOKEN_MOD + TOKEN_MOD) % TOKEN_MOD * modInverse(A, TOKEN_MOD)) % TOKEN_MOD;
+    return { index: Math.floor(x / 10), seat: (x % 10) + 1 };
+  }
+
+  /* ============================================================
+     Room + settings
+  ============================================================ */
+  function persistRoom() {
+    if (roomCode) store.set(KEYS.room, JSON.stringify({ code: roomCode, round }));
+    else store.del(KEYS.room);
+  }
+
+  function restoreRoom() {
+    try {
+      const saved = JSON.parse(store.get(KEYS.room) || 'null');
+      const code = saved ? normalizeRoomCode(saved.code) : '';
+      if (code && Number.isFinite(saved.round) && saved.round >= 1) {
+        roomCode = code;
+        round = Math.min(ROUND_MAX, Math.floor(saved.round));
+      }
+    } catch (e) {}
+  }
+
+  function enterRoom(code) {
+    roomCode = code;
+    round = 1;
+    resetCache();
+    persistRoom();
+    updateAll();
+  }
+
+  function leaveRoom() {
+    roomCode = null;
+    round = 1;
+    persistRoom();
+    showMenu();
+    updateAll();
+  }
+
+  function setRound(value) {
+    let n = parseInt(value, 10);
+    if (!Number.isFinite(n) || n < 1) n = 1;
+    if (n > ROUND_MAX) n = ROUND_MAX;
+    round = n;
+    selectedSlot = null;
+    selectedJudge = null;
+    persistRoom();
+    updateAll();
+    if (inGame) renderGame();
+  }
+
+  function persistTable() {
+    store.set(KEYS.players, String(playerCount));
+    store.set(KEYS.seat, String(mySeat));
+    store.set(KEYS.judge, judgeMode);
+    if (winTarget) store.set(KEYS.target, String(winTarget)); else store.del(KEYS.target);
+  }
+
+  $('join-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const code = normalizeRoomCode($('join-code').value);
+    if (!code) { setStatus('Type a room code first — any letters or numbers.'); $('join-code').focus(); return; }
+    enterRoom(code);
+    $('join-code').value = '';
+    setStatus(`Room ${code} ready. Check everyone has the same decks, player count and a different seat.`, true);
+  });
+
+  $('copy-room-code').addEventListener('click', () => copyText(roomCode, 'Room code copied.'));
+  $('leave-room').addEventListener('click', () => { leaveRoom(); setStatus('You left the room.', true); });
+
+  $('round-prev').addEventListener('click', () => setRound(round - 1));
+  $('round-next').addEventListener('click', () => setRound(round + 1));
+  $('game-prev').addEventListener('click', () => setRound(round - 1));
+  $('game-next').addEventListener('click', () => setRound(round + 1));
+  $('next-round-button').addEventListener('click', () => setRound(round + 1));
+  $('round-input').addEventListener('change', () => setRound($('round-input').value));
+
+  $('player-count').addEventListener('change', () => {
+    let n = parseInt($('player-count').value, 10);
+    if (!Number.isFinite(n)) n = 4;
+    playerCount = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, n));
+    if (mySeat > playerCount) mySeat = playerCount;
+    persistTable(); resetCache(); updateAll();
+  });
+  $('my-seat').addEventListener('change', () => { mySeat = parseInt($('my-seat').value, 10) || 1; persistTable(); updateAll(); });
+  $('judge-mode').addEventListener('change', () => { judgeMode = $('judge-mode').value === 'rand' ? 'rand' : 'seq'; persistTable(); updateAll(); });
+  $('win-target').addEventListener('change', () => {
+    const n = parseInt($('win-target').value, 10);
+    winTarget = Number.isFinite(n) && n >= 1 ? Math.min(20, n) : null;
+    persistTable(); updateAll();
+  });
+
+  function copyText(text, okMessage) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => setStatus(okMessage, true)).catch(() => setStatus('Could not copy — read it out instead.'));
+    } else {
+      setStatus('Copy isn’t available here — read it out instead.');
+    }
+  }
+
+  /* ============================================================
+     Menu: deck dropdown, totals, history
+  ============================================================ */
+  function refreshDeckInfo() {
+    const allPacks = [...packIndex.keys()].sort();
+    const enabled = new Set(getSelectedPacks());
+    $('deck-code').textContent = `decks ${deckFingerprint()}`;
+
+    const list = $('deck-list');
+    list.innerHTML = '';
+    const head = document.createElement('div');
+    head.className = 'deck-count';
+    head.textContent = `${enabled.size} of ${allPacks.length} decks enabled`;
+    list.appendChild(head);
+    allPacks.forEach(name => {
+      const on = enabled.has(name);
+      const b = packIndex.get(name);
+      const row = document.createElement('div');
+      row.className = `deck-item ${on ? 'on' : 'off'}`;
+      row.textContent = `${on ? '✓' : '✕'} ${name} `;
+      const count = document.createElement('span');
+      count.className = 'deck-count';
+      count.textContent = `· ${b.answers.length} answer · ${b.oranges.length} orange`;
+      row.appendChild(count);
+      list.appendChild(row);
+    });
+
+    const answers = sortedAnswers().length;
+    const oranges = sortedOranges().length;
+    $('deck-totals').textContent = enabled.size === 0
+      ? 'No decks selected'
+      : `Selected: ${enabled.size} deck${enabled.size === 1 ? '' : 's'} · ${numberFormat.format(answers)} answer · ${numberFormat.format(oranges)} orange cards`;
+  }
+
+  $('deck-code').addEventListener('click', () => {
+    const open = $('deck-list').classList.toggle('hidden') === false;
+    $('deck-code').setAttribute('aria-expanded', String(open));
+  });
+
+  const HISTORY_LIMIT = 40;
+
+  function refreshHistory() {
+    const past = round - 1;
+    const box = $('history');
+    box.classList.toggle('hidden', !roomCode);
+    if (!roomCode) return;
+    $('history-count').textContent = past > 0 ? `(${past})` : '';
+    if (!box.open) return;
+
+    const list = $('history-list');
+    list.innerHTML = '';
+    if (past < 1 || sortedOranges().length === 0) {
+      const li = document.createElement('li');
+      li.className = 'note';
+      li.textContent = 'No earlier rounds yet.';
+      list.appendChild(li);
+      return;
+    }
+    const st = room();
+    for (let r = past; r >= Math.max(1, past - HISTORY_LIMIT + 1); r--) {
+      const orange = getOrange(r);
+      const li = document.createElement('li');
+      li.className = 'history-item';
+      const num = document.createElement('span');
+      num.className = 'history-round';
+      num.textContent = `R${r}`;
+      const word = document.createElement('b');
+      word.textContent = orange ? orange.Text : '';
+      const meta = document.createElement('span');
+      meta.className = 'history-meta';
+      const winner = st.winners[r];
+      meta.textContent = `Judge: seat ${judgeSeat(r)}${winner ? ` · 🍊 seat ${winner}` : ''}`;
+      li.append(num, word, meta);
+      list.appendChild(li);
+    }
+  }
+  $('history').addEventListener('toggle', refreshHistory);
+
+  /* ============================================================
+     QR codes via qrcode.js (same folder). Fetched on first use.
+  ============================================================ */
+  const QR = (() => {
+    let loading = null;
+    const isReady = () => typeof window.qrcode === 'function' || typeof window.QRCode !== 'undefined';
+
+    function load() {
+      if (isReady()) return Promise.resolve(true);
+      if (!loading) {
+        loading = new Promise(resolve => {
+          const script = document.createElement('script');
+          script.src = 'qrcode.js';
+          script.onload = () => resolve(isReady());
+          script.onerror = () => { loading = null; resolve(false); };
+          document.head.appendChild(script);
+        });
+      }
+      return loading;
+    }
+
+    async function render(text, box) {
+      if (!(await load())) return 'missing';
+      box.innerHTML = '';
+      try {
+        if (typeof window.qrcode === 'function') {
+          const qr = window.qrcode(0, 'M');
+          qr.addData(text);
+          qr.make();
+          box.innerHTML = qr.createSvgTag ? qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true }) : qr.createImgTag(4, 0);
+          return 'ok';
+        }
+        if (window.QRCode && typeof window.QRCode.toString === 'function') {
+          box.innerHTML = await new Promise((resolve, reject) => {
+            window.QRCode.toString(text, { type: 'svg', margin: 0, errorCorrectionLevel: 'M' }, (err, svg) => (err ? reject(err) : resolve(svg)));
+          });
+          return 'ok';
+        }
+        if (typeof window.QRCode === 'function') {
+          const level = window.QRCode.CorrectLevel;
+          new window.QRCode(box, { text, width: 256, height: 256, correctLevel: level ? level.M : undefined });
+          return 'ok';
+        }
+      } catch (e) {
+        box.innerHTML = '';
+        return 'toolong';
+      }
+      return 'unsupported';
+    }
+    return { render };
+  })();
+
+  /* ============================================================
+     Invite link: #room=CODE&d=<decks>&n=<deck count>&p=<players>
+                  &j=s|r (first judge)&w=<target>&r=<round>
+     Kept in the address bar too, so reloading lands on this round.
+  ============================================================ */
+  function buildInviteLink() {
+    const base = location.href.split('#')[0];
+    const allPacks = [...packIndex.keys()].sort();
+    const enabled = new Set(getSelectedPacks());
+    let mask = 0n;
+    allPacks.forEach((name, i) => { if (enabled.has(name)) mask |= (1n << BigInt(i)); });
+    const params = new URLSearchParams({
+      room: roomCode, d: mask.toString(36), n: String(allPacks.length),
+      p: String(playerCount), j: judgeMode === 'rand' ? 'r' : 's', r: String(round)
+    });
+    if (winTarget) params.set('w', String(winTarget));
+    return `${base}#${params.toString()}`;
+  }
+
+  function parseBase36(text) {
+    let value = 0n;
+    for (const ch of text.toLowerCase()) {
+      const digit = parseInt(ch, 36);
+      if (Number.isNaN(digit)) throw new Error('bad deck code');
+      value = value * 36n + BigInt(digit);
+    }
+    return value;
+  }
+
+  function syncAddressBar() {
+    if (!urlSyncReady) return;
+    try {
+      const base = location.pathname + location.search;
+      if (roomCode && lastInviteLink) history.replaceState(null, '', base + '#' + lastInviteLink.split('#')[1]);
+      else if (location.hash) history.replaceState(null, '', base);
+    } catch (e) {}
+  }
+
+  let inviteToken = 0;
+
+  async function refreshInvite() {
+    const show = Boolean(roomCode) && packIndex.size > 0;
+    $('invite').classList.toggle('hidden', !show);
+    $('game-invite').classList.toggle('hidden', !show);
+    if (!show) { lastInviteLink = ''; syncAddressBar(); return; }
+
+    const link = buildInviteLink();
+    $('invite-link').value = link;
+    const changed = link !== lastInviteLink;
+    lastInviteLink = link;
+    syncAddressBar();
+    if (!changed) return;
+
+    const token = ++inviteToken;
+    const results = await Promise.all(Array.from(document.querySelectorAll('.qr-box')).map(box => QR.render(link, box)));
+    if (token !== inviteToken) return;
+    const result = results[0];
+    document.querySelectorAll('.qr-box').forEach(box => box.classList.toggle('hidden', result !== 'ok'));
+
+    $('invite-note').textContent =
+      result === 'missing' ? 'Could not load qrcode.js — keep it in the same folder as this page. You can still copy the link.'
+      : result === 'toolong' ? 'This link is too long for a QR code — copy it instead.'
+      : result === 'unsupported' ? 'qrcode.js loaded, but its format isn’t recognised — copy the link instead.'
+      : location.protocol === 'file:' ? 'This page is open from a file, so other phones can’t open the link. Host the page online to share it.'
+      : `Scan with a phone camera, or copy the link. It sets the room, decks, players, first judge and round (now round ${round}). Each player still picks their own seat.`;
+  }
+
+  function applyInviteFromHash() {
+    const hash = location.hash.replace(/^#/, '');
+    if (!hash || packIndex.size === 0) return;
+    const params = new URLSearchParams(hash);
+    const code = normalizeRoomCode(params.get('room'));
+    if (!code) return;
+
+    const warnings = [];
+
+    const players = parseInt(params.get('p'), 10);
+    if (Number.isFinite(players)) {
+      playerCount = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, players));
+      if (mySeat > playerCount) mySeat = playerCount;
+    }
+    judgeMode = params.get('j') === 'r' ? 'rand' : 'seq';
+    const target = parseInt(params.get('w'), 10);
+    winTarget = Number.isFinite(target) && target >= 1 ? Math.min(20, target) : null;
+    persistTable();
+
+    const allPacks = [...packIndex.keys()].sort();
+    const deckMask = params.get('d');
+    if (deckMask) {
+      if (parseInt(params.get('n'), 10) === allPacks.length) {
+        try {
+          const mask = parseBase36(deckMask);
+          document.querySelectorAll('#pack-selection input').forEach(box => {
+            const index = allPacks.indexOf(box.value);
+            box.checked = index >= 0 && ((mask >> BigInt(index)) & 1n) === 1n;
+          });
+          persistPacks();
+        } catch (e) { warnings.push('the deck list in the link was unreadable'); }
+      } else {
+        warnings.push('your cards file has a different number of decks, so choose the decks yourself');
+      }
+    }
+    resetCache();
+
+    if (roomCode !== code) { roomCode = code; round = 1; }
+    const linkRound = parseInt(params.get('r'), 10);
+    if (Number.isFinite(linkRound) && linkRound >= 1) round = Math.min(ROUND_MAX, linkRound);
+    persistRoom();
+
+    setStatus(warnings.length
+      ? `Joined room ${code}, but ${warnings.join(' and ')}.`
+      : `Joined room ${code}${round > 1 ? ` at round ${round}` : ''} from the link. Pick your seat below.`, warnings.length === 0);
+  }
+
+  $('copy-invite-link').addEventListener('click', () => {
+    const input = $('invite-link');
+    if (!input.value) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(input.value).then(() => setStatus('Invite link copied.', true))
+        .catch(() => { input.select(); setStatus('Press and hold the link to copy it.'); });
+    } else {
+      input.select();
+      setStatus('Press and hold the link to copy it.');
+    }
+  });
+
+  if (navigator.share) $('share-invite-link').classList.remove('hidden');
+  $('share-invite-link').addEventListener('click', () => {
+    const link = $('invite-link').value;
+    if (link && navigator.share) navigator.share({ title: 'Oranges to Oranges', text: `Join room ${roomCode}`, url: link }).catch(() => {});
+  });
+
+  window.addEventListener('hashchange', () => { applyInviteFromHash(); updateAll(); if (inGame) renderGame(); });
+
+  /* ============================================================
+     Game screen
+  ============================================================ */
+  function showMenu() {
+    inGame = false;
+    $('game-screen').classList.add('hidden');
+    $('menu-screen').classList.remove('hidden');
+    window.scrollTo(0, 0);
+  }
+
+  function startGame() {
+    if (!ready || !roomCode) return;
+    if (getSelectedPacks().length === 0) { setStatus('Select at least one deck first.'); return; }
+    const needed = playerCount * HAND;
+    const answers = sortedAnswers().length;
+    if (answers < needed) {
+      setStatus(`Selected decks only have ${answers} answer cards, but ${playerCount} players need ${needed} to start. Add more decks or lower the player count.`);
+      return;
+    }
+    if (sortedOranges().length === 0) { setStatus('No orange cards in the selected decks.'); return; }
+    inGame = true;
+    selectedSlot = null;
+    selectedJudge = null;
+    $('menu-screen').classList.add('hidden');
+    $('game-screen').classList.remove('hidden');
+    renderGame();
+    window.scrollTo(0, 0);
+  }
+
+  const show = (id, on) => $(id).classList.toggle('hidden', !on);
+
+  function answerText(index) {
+    const card = sortedAnswers()[index];
+    return card ? card.Text : null;
+  }
+
+  function renderGame() {
+    const orange = getOrange(round);
+    if (!orange) { showMenu(); setStatus('No orange cards in the selected decks.'); return; }
+
+    const st = room();
+    const judge = judgeSeat(round);
+    const iAmJudge = judge === mySeat;
+    const winner = st.winners[round];
+    const points = scoreboard();
+    const target = getTarget();
+    const leader = Math.max(...points.slice(1));
+    const gameWinner = leader >= target ? points.indexOf(leader, 1) : 0;
+
+    $('banner-code').textContent = roomCode;
+    $('round-badge').textContent = `Round ${round}`;
+    $('oc-word').textContent = orange.Text;
+    $('oc-hint').textContent = orange.Hint || '';
+    const card = $('orange-card');
+    card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+
+    const role = $('role-line');
+    role.textContent = iAmJudge ? '🍊 You are the judge this round' : `Judge this round: Seat ${judge} · You are Seat ${mySeat}`;
+    role.classList.toggle('me', iAmJudge);
+
+    // Scoreboard
+    const scores = $('scores');
+    scores.innerHTML = '';
+    for (let s = 1; s <= playerCount; s++) {
+      const chip = document.createElement('div');
+      chip.className = `score-chip${s === mySeat ? ' me' : ''}${s === judge ? ' judge' : ''}${points[s] === leader && leader > 0 ? ' lead' : ''}`;
+      chip.setAttribute('aria-label', `Seat ${s}${s === judge ? ', judge' : ''}: ${points[s]} oranges`);
+      chip.innerHTML = `<span>${s === judge ? '⚖ ' : ''}S${s}</span><b>${points[s]}</b>`;
+      scores.appendChild(chip);
+    }
+    $('target-note').textContent = `First to ${target} oranges wins · ⚖ = judge`;
+
+    // Which sections to show
+    const hasWinner = Boolean(winner);
+    show('player-pick', !iAmJudge && !hasWinner && st.plays[`${mySeat}|${round}`] === undefined);
+    show('player-played', !iAmJudge && !hasWinner && st.plays[`${mySeat}|${round}`] !== undefined);
+    show('judge-collect', iAmJudge && !hasWinner && !st.revealed[round]);
+    show('judge-choose', iAmJudge && !hasWinner && Boolean(st.revealed[round]));
+    show('winner-section', hasWinner);
+    show('record-winner', !iAmJudge && !hasWinner && st.plays[`${mySeat}|${round}`] !== undefined);
+    show('game-over', gameWinner > 0);
+    // Don't leave stale cards in sections that aren't showing.
+    if (iAmJudge || hasWinner || st.plays[`${mySeat}|${round}`] !== undefined) $('hand').innerHTML = '';
+    if (!iAmJudge || hasWinner || !st.revealed[round]) $('judge-list').innerHTML = '';
+
+    if (!iAmJudge && !hasWinner) {
+      if (st.plays[`${mySeat}|${round}`] === undefined) renderHand();
+      else renderPlayed();
+    }
+    if (iAmJudge && !hasWinner) { if (st.revealed[round]) renderJudgeChoose(); else renderCollect(); }
+    if (hasWinner) renderWinner(winner, iAmJudge);
+    renderSeatGrid(judge, winner);
+
+    if (gameWinner > 0) {
+      $('go-title').textContent = `🏆 Seat ${gameWinner} wins!`;
+      $('go-note').textContent = `${leader} oranges. Use a new room code for a fresh shuffle, or tap New game to replay this one.`;
+    }
+    $('next-round-button').classList.toggle('pulse', hasWinner && gameWinner === 0);
+    $('next-round-button').classList.toggle('hidden', gameWinner > 0);
+    updateAll();
+  }
+
+  /* ---------- player: hand + play ---------- */
+  function renderHand() {
+    const slots = handFor(mySeat, round);
+    const list = $('hand');
+    list.innerHTML = '';
+    slots.forEach((cardIndex, slot) => {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'answer-card';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', String(selectedSlot === slot));
+      btn.textContent = answerText(cardIndex) || '—';
+      const tick = document.createElement('span');
+      tick.className = 'tick';
+      tick.setAttribute('aria-hidden', 'true');
+      tick.textContent = '✓';
+      btn.appendChild(tick);
+      btn.addEventListener('click', () => {
+        selectedSlot = slot;
+        list.querySelectorAll('.answer-card').forEach((el, i) => el.setAttribute('aria-checked', String(i === slot)));
+        $('play-card').disabled = false;
+      });
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+    $('play-card').disabled = selectedSlot === null;
+  }
+
+  $('play-card').addEventListener('click', () => {
+    if (selectedSlot === null) return;
+    const st = room();
+    st.plays[`${mySeat}|${round}`] = selectedSlot;
+    saveRooms();
+    selectedSlot = null;
+    renderGame();
+  });
+
+  function renderPlayed() {
+    const st = room();
+    const slot = st.plays[`${mySeat}|${round}`];
+    const cardIndex = handFor(mySeat, round)[slot];
+    $('play-code').textContent = makeToken(roomCode, round, cardIndex, mySeat) || '????';
+    $('played-text').textContent = answerText(cardIndex) || '';
+  }
+
+  $('change-card').addEventListener('click', () => {
+    const st = room();
+    delete st.plays[`${mySeat}|${round}`];
+    saveRooms();
+    renderGame();
+  });
+
+  /* ---------- judge: collect, choose ---------- */
+  function renderCollect() {
+    const st = room();
+    const entries = st.tokens[round] || [];
+    const expected = playerCount - 1;
+    $('collect-count').textContent = `${entries.length} of ${expected} cards in`;
+    $('reveal-cards').disabled = entries.length < 1;
+    $('reveal-cards').classList.toggle('pulse', entries.length >= expected);
+  }
+
+  $('collect-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = $('token-input');
+    const decoded = decodeToken(roomCode, round, input.value);
+    const count = sortedAnswers().length;
+    if (!decoded || decoded.index >= count || decoded.seat > playerCount) {
+      setStatus('That code doesn’t look right — check it and try again. (Same room, decks and round?)');
+      input.select();
+      return;
+    }
+    if (decoded.seat === judgeSeat(round)) { setStatus('That code is from the judge’s own seat.'); input.select(); return; }
+
+    const st = room();
+    const list = st.tokens[round] = st.tokens[round] || [];
+    const existing = list.findIndex(t => t.seat === decoded.seat);
+    const entry = { seat: decoded.seat, index: decoded.index };
+    if (existing >= 0) list[existing] = entry; else list.push(entry);
+    saveRooms();
+    input.value = '';
+    input.blur();
+    setStatus(existing >= 0 ? 'Card replaced ✓ Pass the phone on.' : 'Card received ✓ Pass the phone on.', true);
+    renderCollect();
+  });
+
+  $('reveal-cards').addEventListener('click', () => {
+    const st = room();
+    st.revealed[round] = true;
+    selectedJudge = null;
+    saveRooms();
+    setStatus('');
+    renderGame();
+  });
+
+  $('back-to-collect').addEventListener('click', () => {
+    const st = room();
+    delete st.revealed[round];
+    saveRooms();
+    renderGame();
+  });
+
+  // Anonymous, shuffled order: seats stay hidden until the winner is chosen.
+  function shuffledEntries() {
+    const st = room();
+    return (st.tokens[round] || []).slice().sort((a, b) => {
+      const ha = xmur3(`${roomCode}|show|${round}|${a.seat}`)();
+      const hb = xmur3(`${roomCode}|show|${round}|${b.seat}`)();
+      return ha - hb;
+    });
+  }
+
+  function renderJudgeChoose() {
+    const list = $('judge-list');
+    list.innerHTML = '';
+    shuffledEntries().forEach((entry, i) => {
+      const li = document.createElement('li');
+      li.className = 'judge-item';
+      const letter = document.createElement('span');
+      letter.className = 'judge-letter';
+      letter.textContent = String.fromCharCode(65 + i);
+      letter.setAttribute('aria-hidden', 'true');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'answer-card';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', String(selectedJudge === entry.seat));
+      btn.textContent = answerText(entry.index) || '—';
+      const tick = document.createElement('span');
+      tick.className = 'tick';
+      tick.setAttribute('aria-hidden', 'true');
+      tick.textContent = '✓';
+      btn.appendChild(tick);
+      btn.addEventListener('click', () => {
+        selectedJudge = entry.seat;
+        list.querySelectorAll('.answer-card').forEach(el => el.setAttribute('aria-checked', 'false'));
+        btn.setAttribute('aria-checked', 'true');
+        $('pick-winner').disabled = false;
+      });
+      li.append(letter, btn);
+      list.appendChild(li);
+    });
+    $('pick-winner').disabled = selectedJudge === null;
+  }
+
+  $('pick-winner').addEventListener('click', () => {
+    if (selectedJudge === null) return;
+    const st = room();
+    st.winners[round] = selectedJudge;
+    saveRooms();
+    selectedJudge = null;
+    renderGame();
+  });
+
+  /* ---------- winner + scores ---------- */
+  function renderWinner(winner, iAmJudge) {
+    const st = room();
+    const entry = (st.tokens[round] || []).find(t => t.seat === winner);
+    const text = entry ? answerText(entry.index) : null;
+    const box = $('winner-card');
+    box.innerHTML = '';
+    const label = document.createElement('div');
+    label.className = 'win-label';
+    label.textContent = `🍊 Round ${round} winner`;
+    const seat = document.createElement('div');
+    seat.className = 'win-seat';
+    seat.textContent = winner === mySeat ? `Seat ${winner} — you!` : `Seat ${winner}`;
+    box.append(label, seat);
+    if (text) {
+      const t = document.createElement('div');
+      t.className = 'win-text';
+      t.textContent = text;
+      box.appendChild(t);
+    }
+    if (!iAmJudge) {
+      const change = document.createElement('button');
+      change.type = 'button';
+      change.className = 'small-button';
+      change.style.marginTop = '12px';
+      change.textContent = 'Wrong seat? Change';
+      change.addEventListener('click', () => { delete st.winners[round]; saveRooms(); renderGame(); });
+      box.appendChild(change);
+    }
+  }
+
+  function renderSeatGrid(judge, winner) {
+    const grid = $('seat-grid');
+    grid.innerHTML = '';
+    for (let s = 1; s <= playerCount; s++) {
+      if (s === judge) continue;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'small-button';
+      btn.setAttribute('aria-pressed', String(winner === s));
+      btn.textContent = s === mySeat ? `Seat ${s} (me)` : `Seat ${s}`;
+      btn.addEventListener('click', () => {
+        const st = room();
+        st.winners[round] = s;
+        saveRooms();
+        renderGame();
+      });
+      grid.appendChild(btn);
+    }
+  }
+
+  $('new-game').addEventListener('click', () => {
+    if (!confirm('Clear this room’s scores and start again from round 1?')) return;
+    delete rooms[roomCode];
+    saveRooms();
+    setRound(1);
+  });
+
+  $('back-to-menu').addEventListener('click', () => { showMenu(); updateAll(); });
+  $('play-button').addEventListener('click', startGame);
+
+  /* ============================================================
+     Repaint
+  ============================================================ */
+  function updateAll() {
+    const inRoom = Boolean(roomCode);
+    show('room-entry', !inRoom);
+    show('room-active', inRoom);
+    $('room-code-display').textContent = roomCode || '—';
+    $('round-input').value = String(round);
+    $('play-button').textContent = `Play round ${round}`;
+    $('play-button').disabled = !ready || !inRoom;
+
+    $('player-count').value = String(playerCount);
+    const seatSelect = $('my-seat');
+    if (seatSelect.options.length !== playerCount) {
+      seatSelect.innerHTML = '';
+      for (let i = 1; i <= playerCount; i++) {
+        const option = document.createElement('option');
+        option.value = String(i);
+        option.textContent = `Seat ${i}`;
+        seatSelect.appendChild(option);
+      }
+    }
+    seatSelect.value = String(mySeat);
+    $('judge-mode').value = judgeMode;
+    $('win-target').value = winTarget ? String(winTarget) : '';
+    $('win-target').placeholder = `Auto (${defaultTarget(playerCount)})`;
+    $('table-note').textContent = inRoom && judgeSeat(round) === mySeat
+      ? `Round ${round}: you’re the judge (seat ${mySeat}).`
+      : `Round ${round}: seat ${judgeSeat(round)} is the judge. Everyone picks a different seat.`;
+
+    refreshDeckInfo();
+    refreshInvite();
+    refreshHistory();
+    $('banner-code').textContent = roomCode || '—';
+    $('round-badge').textContent = `Round ${round}`;
+  }
+
+  /* ============================================================
+     Init
+  ============================================================ */
+  initMode();
+  loadRooms();
+  restoreRoom();
+
+  const savedPlayers = parseInt(store.get(KEYS.players), 10);
+  if (Number.isFinite(savedPlayers)) playerCount = Math.max(MIN_PLAYERS, Math.min(MAX_PLAYERS, savedPlayers));
+  const savedSeat = parseInt(store.get(KEYS.seat), 10);
+  if (Number.isFinite(savedSeat)) mySeat = Math.max(1, Math.min(playerCount, savedSeat));
+  if (store.get(KEYS.judge) === 'rand') judgeMode = 'rand';
+  const savedTarget = parseInt(store.get(KEYS.target), 10);
+  if (Number.isFinite(savedTarget) && savedTarget >= 1) winTarget = Math.min(20, savedTarget);
+
+  updateAll();
+  loadCards();
+
+  // Offline support: the service worker caches the page, cards, QR library and fonts.
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('oranges-sw.js', { scope: './oranges.html' })
+        .then(() => navigator.serviceWorker.ready)
+        .then(() => $('offline-status').classList.remove('hidden'))
+        .catch(() => {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
